@@ -69,9 +69,6 @@ class _AllBloodRequestsPageState extends State<AllBloodRequestsPage> {
     myData.getData();
 
     Future.delayed(Duration(seconds: 1), () {
-      // Code to execute after 3 seconds
-      print("Delayed code executed!");
-
       _hostController.text = myData.mqttHost;
       _portController.text = myData.mqttPort;
       _subscribeTopicController.text = myData.mqttSUbscribeTopic;
@@ -80,8 +77,6 @@ class _AllBloodRequestsPageState extends State<AllBloodRequestsPage> {
       _pubMsg2Controller.text = myData.pubMsg2;
       _pubMsg3Controller.text = myData.pubMsg3;
       _pubMsg4Controller.text = myData.pubMsg4;
-
-      print("WWWWWWWWWWWWWWWWWWWWWWWWWDD , $myData.mqttHost");
     });
   }
 

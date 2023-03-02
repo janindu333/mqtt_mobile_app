@@ -100,6 +100,8 @@ class BloodRequestProvider with ChangeNotifier {
     _mqttHost = ip;
     _mqttPort = port;
 
+    print("TTTTTTTT , $_mqttHost");
+
     // Store a value
     prefs = await SharedPreferences.getInstance();
     prefs.setString('_mqttHost', _mqttHost);
@@ -169,11 +171,6 @@ class BloodRequestProvider with ChangeNotifier {
     _isMqttConnected = false;
     _mqttConnectivityBtnVisible = true;
     _mqttDisconnectivityBtnVisible = false;
-    _mqttHost = "";
-    _mqttPort = "";
-
-    prefs.setString('_mqttHost', "");
-    prefs.setString('_mqttPort', "");
 
     prefs.setBool('_isMqttConnected', _isMqttConnected);
     prefs.setBool('_mqttConnectivityBtnVisible', _mqttConnectivityBtnVisible);
@@ -266,6 +263,7 @@ class BloodRequestProvider with ChangeNotifier {
   }
 
   Future<ResponseModel> publishMsg2({String topic, String msg}) async {
+    print("DDDDDDDDDDDDDDDDDDDDDDDD , $topic , $msg");
     ResponseModel responseModel;
     final builder = MqttClientPayloadBuilder();
     builder.addString(msg);

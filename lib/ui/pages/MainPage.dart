@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:bloodDonate/blocks/BloodRequestBloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'AllBloodRequestsPage.dart';
 
@@ -28,10 +29,49 @@ class _MainPageState extends State<MainPage> {
   double curveHeight = 60.0 * 2.5;
   final _drawerController = AwesomeDrawerBarController();
   int _currentPage = 0;
+  SharedPreferences prefs;
 
   @override
   void initState() {
- 
+    _loadInitialMqttData();
+  }
+
+  Future<void> _loadInitialMqttData() async {
+    prefs = await SharedPreferences.getInstance();
+    bool _isMqttConnected = prefs.getBool('_isMqttConnected');
+
+    if (_isMqttConnected) {
+      BloodRequestProvider bloodRequestProvider =
+          Provider.of<BloodRequestProvider>(context, listen: false);
+      bloodRequestProvider
+          .connectToBroker(
+              ip: prefs.getString('_mqttHost'),
+              port: prefs.getString('_mqttPort'))
+          .then((status) async {
+        if (status.isSuccess) {
+          // _resetFields();
+          showSuccesstoast(status.message);
+
+          BloodRequestProvider myData =
+              Provider.of<BloodRequestProvider>(context, listen: false);
+          myData.getData();
+
+          myData
+              .subscribeToTopic(
+                  topic: prefs.getString('_mqttSUbscribeTopic').trim())
+              .then((status) async {
+            if (status.isSuccess) {
+              // _resetFields();
+              showSuccesstoast(status.message);
+            } else {
+              showFailedtoast(status.message);
+            }
+          });
+        } else {
+          showFailedtoast(status.message + " ");
+        }
+      });
+    } else {}
   }
 
   @override
@@ -50,6 +90,28 @@ class _MainPageState extends State<MainPage> {
       ),
     );
   }
+}
+
+void showSuccesstoast(String message) {
+  Fluttertoast.showToast(
+      msg: message,
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.CENTER,
+      timeInSecForIosWeb: 1,
+      backgroundColor: Colors.green,
+      textColor: Colors.white,
+      fontSize: 16.0);
+}
+
+void showFailedtoast(String message) {
+  Fluttertoast.showToast(
+      msg: message,
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.CENTER,
+      timeInSecForIosWeb: 1,
+      backgroundColor: Colors.red,
+      textColor: Colors.white,
+      fontSize: 16.0);
 }
 
 class MyHomePage extends StatelessWidget {
