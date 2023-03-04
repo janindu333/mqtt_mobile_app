@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hive/hive.dart';
 import 'package:bloodDonate/ui/pages/RootPage.dart';
+import 'package:provider/provider.dart';
 
+import '../../blocks/blood_request_block_provider.dart';
 import '../../common/assets.dart';
 import '../../common/colors.dart';
 import '../../common/hive_boxes.dart';
@@ -23,6 +25,7 @@ class _TutorialScreenState extends State<TutorialScreen>
     with SingleTickerProviderStateMixin {
   final _controller = PageController();
   int _currentIndex = 0;
+  final _codeController = TextEditingController();
 
   @override
   void initState() {
@@ -37,125 +40,108 @@ class _TutorialScreenState extends State<TutorialScreen>
   @override
   void dispose() {
     _controller?.dispose();
+    _codeController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: PageView(
-                controller: _controller,
-                physics: const BouncingScrollPhysics(),
-                children: const [
-                  _TutorialPanel(
-                    asset: IconAssets.bloodHand,
-                    title: 'Request Blood',
-                    body: 'Submit a blood request and let the donors know!',
-                  ),
-                  _TutorialPanel(
-                    asset: IconAssets.bloodBagHand,
-                    title: 'Donate Blood',
-                    body: 'Browse the requests and check if you can help by '
-                        'donating blood to those who need it',
-                  ),
-                  _TutorialPanel(
-                    asset: IconAssets.clipboard,
-                    title: 'Health Information',
-                    body: 'Stay updated with the latest health tips and '
-                        'information',
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 32),
-              child: DotsIndicator(
-                dotsCount: 3,
-                decorator: const DotsDecorator(
-                  activeColor: MainColors.primary,
-                  size: Size.square(12),
-                  activeSize: Size.square(12),
-                ),
-                position: _currentIndex * 1.0,
-              ),
-            ),
-            InkWell(
-              onTap: () {
-                if (_currentIndex == 2) {
-                  Hive.box(ConfigBox.key).put(ConfigBox.isFirstLaunch, false);
-                  // RootPage();
-                  Navigator.of(context)
-                      .pushReplacementNamed(LoginPage.routeName);
-                } else {
-                  _controller.animateToPage(
-                    _currentIndex + 1,
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.decelerate,
-                  );
-                }
-              },
-              child: Ink(
-                color: MainColors.primary,
-                padding: const EdgeInsets.all(16),
-                width: double.infinity,
-                child: Text(
-                  _currentIndex == 2 ? "Let's go!" : 'Next',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(color: Colors.white, fontSize: 16),
-                ),
-              ),
-            ),
-          ],
+      appBar: AppBar(
+        backgroundColor: Colors.blue,
+        centerTitle: true,
+        title: Padding(
+          padding: EdgeInsets.symmetric(vertical: 10.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [Text('Activation Code', style: TextStyle(fontSize: 20))],
+          ),
         ),
       ),
-    );
-  }
-}
+      body: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Consumer<BloodRequestProvider>(
+              builder: (context, bloodRequestProvider, child) {
+            return Center(
+                child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              // ignore: prefer_const_literals_to_create_immutables
+              children: <Widget>[
+                Padding(
+                  padding: EdgeInsets.only(top: 20.0, bottom: 20.0),
+                  child: Text(
+                    "Enter activation code",
+                    style: TextStyle(
+                      fontSize: 20.0,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                Padding(
+                    padding: EdgeInsets.only(top: 20.0, bottom: 20.0),
+                    child: Container(
+                      width: 200,
+                      height: 50,
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: Colors.grey,
+                          width: 1,
+                        ),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 10),
+                        child: TextField(
+                          keyboardType: TextInputType.number,
+                          controller: _codeController,
+                          decoration: InputDecoration(
+                            border: InputBorder.none,
+                            hintText: bloodRequestProvider.mqttHost?.isNotEmpty
+                                ? bloodRequestProvider.mqttHost
+                                : '',
+                          ),
+                        ),
+                      ),
+                    )),
+                Padding(
+                    padding: EdgeInsets.only(top: 20.0, bottom: 20.0),
+                    child: InkWell(
+                      onTap: () {
+                        bloodRequestProvider
+                            .activateCode(code: _codeController.text.trim())
+                            .then((status) async {
+                          if (status.isSuccess) {
+                            // _resetFields();
+                            showSuccesstoast(status.message);
 
-class _TutorialPanel extends StatelessWidget {
-  final String asset, title, body;
-
-  const _TutorialPanel({
-    Key key,
-    @required this.asset,
-    @required this.title,
-    @required this.body,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    // final textTheme = Theme.of(context).textTheme;
-    return Padding(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 42),
-            child: SvgPicture.asset(
-              asset,
-              fit: BoxFit.fitWidth,
-              width: MediaQuery.of(context).size.width * 0.5,
-            ),
-          ),
-          Text(
-            title,
-            // style: textTheme.headline4.copyWith(
-            //   color: MainColors.primary,
-            // ),
-          ),
-          const SizedBox(height: 18),
-          Text(
-            body,
-            textAlign: TextAlign.center,
-            //  style: textTheme.headline3.copyWith(fontSize: 18, height: 1.2),
-          ),
-        ],
-      ),
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => MainPage(),
+                              ),
+                            ).then((status) async {
+                              if (status.isSuccess) {
+                                // _resetFields();
+                                showSuccesstoast(status.message);
+                              } else {
+                                showFailedtoast(status.message);
+                              }
+                            });
+                          } else {
+                            showFailedtoast(status.message);
+                          }
+                        });
+                      },
+                      child: Image.asset(
+                        'assets/images/active.png',
+                        width: 150,
+                        height: 50,
+                      ),
+                    ))
+              ],
+            ));
+          })),
     );
   }
 }

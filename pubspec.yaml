@@ -52,6 +52,7 @@ dependencies:
   hive_flutter: ^1.1.0
   dio: ^4.0.4
   provider: ^6.0.2
+  flutter_launcher_icons: ^0.9.2
   flutter_zoom_drawer: ^2.2.2
   get_it: ^7.2.0
   flutter_easyloading: ^3.0.3
@@ -102,6 +103,8 @@ flutter:
   assets:
      - assets/images/
      - assets/icons/
+     - assets/images/appimage.png
+     - assets/images/cover.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:

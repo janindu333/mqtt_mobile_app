@@ -54,11 +54,15 @@ class _AllBloodRequestsPageState extends State<AllBloodRequestsPage> {
   final _pubMsg3Controller = TextEditingController();
   final _pubMsg4Controller = TextEditingController();
 
+  final _pubTop1Controller = TextEditingController();
+  final _pubTop2Controller = TextEditingController();
+  final _pubTop3Controller = TextEditingController();
+  final _pubTop4Controller = TextEditingController();
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-
     _loadData();
   }
 
@@ -77,6 +81,13 @@ class _AllBloodRequestsPageState extends State<AllBloodRequestsPage> {
       _pubMsg2Controller.text = myData.pubMsg2;
       _pubMsg3Controller.text = myData.pubMsg3;
       _pubMsg4Controller.text = myData.pubMsg4;
+
+      _pubTop1Controller.text = myData.topMsg1;
+      _pubTop2Controller.text = myData.topMsg2;
+      _pubTop3Controller.text = myData.topMsg3;
+      _pubTop4Controller.text = myData.topMsg4;
+
+      print("XXXXXXXXXXXXXXXXXXXXXXXXXXX , $_hostController.text");
     });
   }
 
@@ -129,6 +140,11 @@ class _AllBloodRequestsPageState extends State<AllBloodRequestsPage> {
     _pubMsg3Controller.dispose();
     _pubMsg4Controller.dispose();
 
+    _pubTop1Controller.dispose();
+    _pubTop2Controller.dispose();
+    _pubTop3Controller.dispose();
+    _pubTop4Controller.dispose();
+
     super.dispose();
   }
 
@@ -140,6 +156,7 @@ class _AllBloodRequestsPageState extends State<AllBloodRequestsPage> {
 
     return Scaffold(
         appBar: AppBar(
+          backgroundColor: Colors.blue,
           title: Padding(
             padding: EdgeInsets.symmetric(vertical: 10.0),
             child: Column(
@@ -188,6 +205,7 @@ class _AllBloodRequestsPageState extends State<AllBloodRequestsPage> {
                             child: Padding(
                               padding: EdgeInsets.symmetric(horizontal: 10),
                               child: TextField(
+                                enabled: true,
                                 controller: _hostController,
                                 decoration: InputDecoration(
                                   border: InputBorder.none,
@@ -233,6 +251,7 @@ class _AllBloodRequestsPageState extends State<AllBloodRequestsPage> {
                             child: Padding(
                               padding: EdgeInsets.symmetric(horizontal: 10),
                               child: TextField(
+                                enabled: true,
                                 controller: _portController,
                                 keyboardType: TextInputType.number,
                                 inputFormatters: <TextInputFormatter>[
@@ -253,7 +272,7 @@ class _AllBloodRequestsPageState extends State<AllBloodRequestsPage> {
                     ),
                   ),
                   Visibility(
-                    visible: bloodRequestProvider.mqttConnectivityBtnVisible,
+                    visible: false,
                     child: Container(
                       width: 140,
                       height: 50,
@@ -286,29 +305,29 @@ class _AllBloodRequestsPageState extends State<AllBloodRequestsPage> {
                       ),
                     ),
                   ),
-                  Visibility(
-                    visible: bloodRequestProvider.mqttDisconnectivityBtnVisible,
-                    child: Container(
-                      width: 140,
-                      height: 50,
-                      child: ElevatedButton(
-                        onPressed: bloodRequestProvider.isMqttConnected
-                            ? () {
-                                bloodRequestProvider
-                                    .disConnectFromBroker()
-                                    .then((status) async {
-                                  if (status.isSuccess) {
-                                    showSuccesstoast(status.message);
-                                  } else {
-                                    showFailedtoast(status.message);
-                                  }
-                                });
-                              }
-                            : null,
-                        child: Text('DisConnect'),
-                      ),
-                    ),
-                  ),
+                  // Visibility(
+                  //   visible: bloodRequestProvider.mqttDisconnectivityBtnVisible,
+                  //   child: Container(
+                  //     width: 140,
+                  //     height: 50,
+                  //     child: ElevatedButton(
+                  //       onPressed: bloodRequestProvider.isMqttConnected
+                  //           ? () {
+                  //               bloodRequestProvider
+                  //                   .disConnectFromBroker()
+                  //                   .then((status) async {
+                  //                 if (status.isSuccess) {
+                  //                   showSuccesstoast(status.message);
+                  //                 } else {
+                  //                   showFailedtoast(status.message);
+                  //                 }
+                  //               });
+                  //             }
+                  //           : null,
+                  //       child: Text('DisConnect'),
+                  //     ),
+                  //   ),
+                  // ),
                   Padding(
                     padding: EdgeInsets.all(25.0),
                     child: Center(
@@ -339,6 +358,7 @@ class _AllBloodRequestsPageState extends State<AllBloodRequestsPage> {
                             child: Padding(
                               padding: EdgeInsets.symmetric(horizontal: 10),
                               child: TextField(
+                                enabled: true,
                                 controller: _subscribeTopicController,
                                 decoration: InputDecoration(
                                   border: InputBorder.none,
@@ -354,44 +374,49 @@ class _AllBloodRequestsPageState extends State<AllBloodRequestsPage> {
                       ),
                     ),
                   ),
-                  Container(
-                    width: 100,
-                    height: 50,
-                    child: ElevatedButton(
-                      onPressed: bloodRequestProvider.isMqttConnected
-                          ? () {
-                              if (_subscribeTopicController.text.trim() == "") {
-                                showtoast("Please enter subscribe topic");
-                              } else {
-                                bloodRequestProvider
-                                    .subscribeToTopic(
-                                        topic: _subscribeTopicController.text
-                                            .trim())
-                                    .then((status) async {
-                                  if (status.isSuccess) {
-                                    // _resetFields();
-                                    showSuccesstoast(status.message);
-                                  } else {
-                                    showFailedtoast(status.message);
-                                  }
-                                });
-                              }
-                            }
-                          : null,
-                      child: Text('Subscribe'),
-                    ),
-                  ),
-                  Container(
-                    margin: EdgeInsets.only(left: 23),
-                    child: TextField(
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                      decoration: InputDecoration(
-                        hintText: 'Publish Topic',
-                        contentPadding: EdgeInsets.all(10),
-                        border: InputBorder.none,
+                  Padding(
+                    padding: EdgeInsets.all(25.0),
+                    child: Center(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: 170,
+                            height: 50,
+                            child: TextField(
+                              decoration: InputDecoration(
+                                hintText: 'Publish Topic : ',
+                                contentPadding: EdgeInsets.all(10),
+                                border: InputBorder.none,
+                              ),
+                            ),
+                          ),
+                          Container(
+                            width: 150,
+                            height: 50,
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: Colors.grey,
+                                width: 1,
+                              ),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 10),
+                              child: TextField(
+                                enabled: true,
+                                controller: _publishTopicController,
+                                decoration: InputDecoration(
+                                  border: InputBorder.none,
+                                  hintText: bloodRequestProvider
+                                          .mqttSUbscribeTopic?.isNotEmpty
+                                      ? bloodRequestProvider.mqttSUbscribeTopic
+                                      : '',
+                                ),
+                              ),
+                            ),
+                          )
+                        ],
                       ),
                     ),
                   ),
@@ -407,68 +432,93 @@ class _AllBloodRequestsPageState extends State<AllBloodRequestsPage> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Container(
-                              width: 200,
-                              height: 50,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(10),
-                                border:
-                                    Border.all(color: Colors.grey, width: 1),
-                              ),
-                              child: Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 10),
-                                child: TextField(
-                                  controller: _publishTopicController,
-                                  decoration: InputDecoration(
-                                    border: InputBorder.none,
-                                    hintText: 'Name Of Topic',
-                                  ),
-                                ),
-                              ),
-                            ),
                             SizedBox(height: 20.0),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Container(
-                                  width: 170,
-                                  height: 100,
+                                  width: 150,
+                                  height: 200,
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(10),
                                     border: Border.all(
-                                        color: Colors.grey, width: 1),
-                                  ),
-                                  child: Padding(
-                                    padding:
-                                        EdgeInsets.symmetric(horizontal: 10),
-                                    child: TextField(
-                                      controller: _pubMsg1Controller,
-                                      decoration: InputDecoration(
-                                        border: InputBorder.none,
-                                        hintText: 'MSG Button 1',
-                                      ),
+                                      color: Colors.grey,
+                                      width: 1,
                                     ),
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      Padding(
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 10),
+                                        child: TextField(
+                                          controller: _pubTop1Controller,
+                                          decoration: InputDecoration(
+                                            border: InputBorder.none,
+                                            hintText: 'ON',
+                                          ),
+                                        ),
+                                      ),
+                                      Divider(
+                                        color: Colors.grey,
+                                        thickness: 1,
+                                        height: 0,
+                                      ),
+                                      Padding(
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 10),
+                                        child: TextField(
+                                          controller: _pubMsg1Controller,
+                                          decoration: InputDecoration(
+                                            border: InputBorder.none,
+                                            hintText: 'MSG Button 1',
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                                 SizedBox(width: 2.0),
                                 Container(
-                                  width: 170,
-                                  height: 100,
+                                  width: 150,
+                                  height: 200,
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(10),
                                     border: Border.all(
-                                        color: Colors.grey, width: 1),
-                                  ),
-                                  child: Padding(
-                                    padding:
-                                        EdgeInsets.symmetric(horizontal: 10),
-                                    child: TextField(
-                                      controller: _pubMsg2Controller,
-                                      decoration: InputDecoration(
-                                        border: InputBorder.none,
-                                        hintText: 'MSG Button 2',
-                                      ),
+                                      color: Colors.grey,
+                                      width: 1,
                                     ),
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      Padding(
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 10),
+                                        child: TextField(
+                                          controller: _pubTop2Controller,
+                                          decoration: InputDecoration(
+                                            border: InputBorder.none,
+                                            hintText: 'ON',
+                                          ),
+                                        ),
+                                      ),
+                                      Divider(
+                                        color: Colors.grey,
+                                        thickness: 1,
+                                        height: 0,
+                                      ),
+                                      Padding(
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 10),
+                                        child: TextField(
+                                          controller: _pubMsg2Controller,
+                                          decoration: InputDecoration(
+                                            border: InputBorder.none,
+                                            hintText: 'MSG Button 2',
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ],
@@ -478,89 +528,158 @@ class _AllBloodRequestsPageState extends State<AllBloodRequestsPage> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Container(
-                                  width: 170,
-                                  height: 100,
+                                  width: 150,
+                                  height: 200,
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(10),
                                     border: Border.all(
-                                        color: Colors.grey, width: 1),
-                                  ),
-                                  child: Padding(
-                                    padding:
-                                        EdgeInsets.symmetric(horizontal: 10),
-                                    child: TextField(
-                                      controller: _pubMsg3Controller,
-                                      decoration: InputDecoration(
-                                        border: InputBorder.none,
-                                        hintText: 'MSG Button 3',
-                                      ),
+                                      color: Colors.grey,
+                                      width: 1,
                                     ),
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      Padding(
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 10),
+                                        child: TextField(
+                                          controller: _pubTop3Controller,
+                                          decoration: InputDecoration(
+                                            border: InputBorder.none,
+                                            hintText: 'GET',
+                                          ),
+                                        ),
+                                      ),
+                                      Divider(
+                                        color: Colors.grey,
+                                        thickness: 1,
+                                        height: 0,
+                                      ),
+                                      Padding(
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 10),
+                                        child: TextField(
+                                          controller: _pubMsg3Controller,
+                                          decoration: InputDecoration(
+                                            border: InputBorder.none,
+                                            hintText: 'MSG Button 3',
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                                 SizedBox(width: 2.0),
                                 Container(
-                                  width: 170,
-                                  height: 100,
+                                  width: 150,
+                                  height: 200,
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(10),
                                     border: Border.all(
-                                        color: Colors.grey, width: 1),
-                                  ),
-                                  child: Padding(
-                                    padding:
-                                        EdgeInsets.symmetric(horizontal: 10),
-                                    child: TextField(
-                                      controller: _pubMsg4Controller,
-                                      decoration: InputDecoration(
-                                        border: InputBorder.none,
-                                        hintText: 'MSG Button 4',
-                                      ),
+                                      color: Colors.grey,
+                                      width: 1,
                                     ),
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      Padding(
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 10),
+                                        child: TextField(
+                                          controller: _pubTop4Controller,
+                                          decoration: InputDecoration(
+                                            border: InputBorder.none,
+                                            hintText: 'GSC',
+                                          ),
+                                        ),
+                                      ),
+                                      Divider(
+                                        color: Colors.grey,
+                                        thickness: 1,
+                                        height: 0,
+                                      ),
+                                      Padding(
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 10),
+                                        child: TextField(
+                                          controller: _pubMsg4Controller,
+                                          decoration: InputDecoration(
+                                            border: InputBorder.none,
+                                            hintText: 'MSG Button 4',
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ],
                             ),
                             SizedBox(height: 20.0),
-                            Container(
-                              width: 100,
-                              height: 50,
-                              child: ElevatedButton(
-                                onPressed: () {
-                                  bloodRequestProvider
-                                      .storePublishData(
-                                    topic: _publishTopicController.text.trim(),
-                                    msg1: _pubMsg1Controller.text.trim(),
-                                    msg2: _pubMsg2Controller.text.trim(),
-                                    msg3: _pubMsg3Controller.text.trim(),
-                                    msg4: _pubMsg4Controller.text.trim(),
-                                  )
-                                      .then((status) async {
-                                    if (status.isSuccess) {
-                                      // _resetFields();
-                                      showSuccesstoast(status.message);
-                                    } else {
-                                      showFailedtoast(status.message);
-                                    }
-                                  });
-                                },
-                                child: Text('Save'),
-                              ),
-                            )
                           ],
                         ),
                       ),
                     ),
                   ),
-                  Container(
-                    width: 100,
-                    height: 50,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        _showDialogBox(context);
-                      },
-                      child: Text('Delay'),
-                    ),
-                  ),
+
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment
+                        .center, // Center the buttons horizontally
+                    children: [
+                      Container(
+                        width: 100,
+                        height: 50,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            _showDialogBox(context);
+                          },
+                          style: ButtonStyle(
+                            backgroundColor:
+                                MaterialStateProperty.all<Color>(Colors.blue),
+                            // set the desired color here
+                          ),
+                          child: Text('Delay'),
+                        ),
+                      ),
+                      SizedBox(width: 16), // Add some space between the buttons
+                      Container(
+                        width: 100,
+                        height: 50,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            bloodRequestProvider
+                                .storePublishData(
+                                    topic: _publishTopicController.text.trim(),
+                                    msg1: _pubMsg1Controller.text.trim(),
+                                    msg2: _pubMsg2Controller.text.trim(),
+                                    msg3: _pubMsg3Controller.text.trim(),
+                                    msg4: _pubMsg4Controller.text.trim(),
+                                    top1: _pubTop1Controller.text.trim(),
+                                    top2: _pubTop2Controller.text.trim(),
+                                    top3: _pubTop3Controller.text.trim(),
+                                    top4: _pubTop4Controller.text.trim(),
+                                    subTop:
+                                        _subscribeTopicController.text.trim(),
+                                    host: _hostController.text.trim(),
+                                    port: _portController.text.trim())
+                                .then((status) async {
+                              if (status.isSuccess) {
+                                // _resetFields();
+                                showSuccesstoast(status.message);
+                              } else {
+                                showFailedtoast(status.message);
+                              }
+                            });
+                          },
+                          style: ButtonStyle(
+                            backgroundColor:
+                                MaterialStateProperty.all<Color>(Colors.blue),
+                            // set the desired color here
+                          ),
+                          child: Text('Save'),
+                        ),
+                      ),
+                    ],
+                  )
                 ],
               );
             }),

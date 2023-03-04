@@ -1,5 +1,7 @@
 // ignore_for_file: file_names, prefer_const_constructors, prefer_const_literals_to_create_immutables, unnecessary_new, sized_box_for_whitespace
 
+import 'dart:async';
+
 import 'package:awesome_drawer_bar/awesome_drawer_bar.dart';
 import 'package:bloodDonate/blocks/blood_request_block_provider.dart';
 import 'package:bloodDonate/blocks/slide_bar_menu_povider.dart';
@@ -38,7 +40,9 @@ class _MainPageState extends State<MainPage> {
 
   Future<void> _loadInitialMqttData() async {
     prefs = await SharedPreferences.getInstance();
-    bool _isMqttConnected = prefs.getBool('_isMqttConnected');
+    bool _isMqttConnected = prefs.getBool('_isMqttConnected') ?? false;
+
+    print("_isMqttConnected  ,  $_isMqttConnected");
 
     if (_isMqttConnected) {
       BloodRequestProvider bloodRequestProvider =
@@ -71,7 +75,11 @@ class _MainPageState extends State<MainPage> {
           showFailedtoast(status.message + " ");
         }
       });
-    } else {}
+    } else {
+      BloodRequestProvider myData =
+          Provider.of<BloodRequestProvider>(context, listen: false);
+      myData.getData();
+    }
   }
 
   @override
@@ -119,179 +127,225 @@ class MyHomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Padding(
-            padding: EdgeInsets.symmetric(vertical: 10.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('GPRS BASED STARTER BY', style: TextStyle(fontSize: 20)),
-                Text('thingsworld.cloud', style: TextStyle(fontSize: 16)),
-              ],
+          flexibleSpace: Container(
+            margin: EdgeInsets.only(top: 25), // Add a top margin of 100 pixels
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/images/cover.png'),
+                fit: BoxFit.cover,
+              ),
             ),
           ),
+          // Add any other properties you want to your AppBar
         ),
         body: Container(
-          // Add your desired background color here
-          child: SingleChildScrollView(
+            color: Colors.white, // Add your desired background color here
             child: Consumer<BloodRequestProvider>(
                 builder: (context, bloodRequestProvider, child) {
               return Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Container(
-                    margin: EdgeInsets.only(top: 20.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment
-                          .center, // center the buttons within the row
-                      children: [
-                        Container(
-                          width: 120, // set the width of the button
-                          height: 40,
-                          child: ElevatedButton(
-                            onPressed: () {
-                              // Handle button press
-                            },
-                            child: Text('Reset'),
-                          ),
-                        ),
-                        SizedBox(width: 20.0),
-                        Container(
-                          width: 120, // set the width of the button
-                          height: 40,
-                          child: ElevatedButton(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) =>
-                                        AllBloodRequestsPage()),
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.symmetric(
+                          vertical: 20.0, horizontal: 40.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          Visibility(
+                              visible: bloodRequestProvider
+                                  .mqttConnectivityBtnVisible,
+                              child: InkWell(
+                                onTap: () {
+                                  bloodRequestProvider
+                                      .connectToBroker(
+                                          ip: bloodRequestProvider.mqttHost
+                                              .trim(),
+                                          port: bloodRequestProvider.mqttPort
+                                              .trim())
+                                      .then((status) async {
+                                    if (status.isSuccess) {
+                                      // _resetFields();
+                                      showSuccesstoast(status.message);
+
+                                      bloodRequestProvider
+                                          .subscribeToTopic(
+                                        topic: bloodRequestProvider
+                                            .mqttSUbscribeTopic
+                                            .trim(),
+                                      )
+                                          .then((status) async {
+                                        if (status.isSuccess) {
+                                          // _resetFields();
+                                          showSuccesstoast(status.message);
+                                        } else {
+                                          showFailedtoast(status.message);
+                                        }
+                                      });
+                                    } else {
+                                      showFailedtoast(status.message);
+                                    }
+                                  });
+                                },
+                                child: Image.asset(
+                                  'assets/images/connect.png',
+                                  width: 150,
+                                  height: 50,
+                                ),
+                              )),
+                          Visibility(
+                              visible: bloodRequestProvider
+                                  .mqttDisconnectivityBtnVisible,
+                              child: InkWell(
+                                onTap: () {
+                                  bloodRequestProvider
+                                      .disConnectFromBroker()
+                                      .then((status) async {
+                                    if (status.isSuccess) {
+                                      showSuccesstoast(status.message);
+                                    } else {
+                                      showFailedtoast(status.message);
+                                    }
+                                  });
+                                },
+                                child: Image.asset(
+                                  'assets/images/connected.png',
+                                  width: 150,
+                                  height: 50,
+                                ),
+                              )),
+                          InkWell(
+                            onTap: () {
+                              String password = '';
+
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                    title: Text('Enter Password'),
+                                    content: TextField(
+                                      obscureText: true,
+                                      onChanged: (value) {
+                                        password = value;
+                                      },
+                                      decoration: InputDecoration(
+                                        hintText: 'Password',
+                                      ),
+                                    ),
+                                    actions: <Widget>[
+                                      TextButton(
+                                        child: Text('Cancel'),
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                        },
+                                      ),
+                                      ElevatedButton(
+                                        child: Text('Submit'),
+                                        onPressed: () {
+                                          checkPassword(
+                                              password.trim(), context);
+                                        },
+                                      ),
+                                    ],
+                                  );
+                                },
                               );
                             },
-                            child: Text('Settings'),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Padding(
-                      padding: EdgeInsets.all(20.0),
-                      child: Card(
-                        elevation:
-                            4.0, // add some elevation to give the card some depth
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(
-                              12.0), // set the radius of the corners
-                        ),
-                        child: SizedBox(
-                          width: 400, // set the width of the card
-                          height: 400, // set the height of the card
-                          child: Container(
-                            margin: EdgeInsets.all(8.0),
-                            child: Text(
-                              bloodRequestProvider.mqttMessage == null
-                                  ? "Messages Not Recieved yet"
-                                  : bloodRequestProvider.mqttMessage,
-                              style: TextStyle(fontSize: 18.0),
+                            child: Image.asset(
+                              'assets/images/setting.png',
+                              width: 40,
+                              height: 40,
                             ),
                           ),
-                        ),
-                      )),
-                  Padding(
-                    padding: EdgeInsets.only(top: 20.0, bottom: 20.0),
-                    child: Center(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            width: 100,
-                            height: 100,
-                            child: ElevatedButton(
-                              onPressed: bloodRequestProvider.mqttOnButton1
-                                  ? () {
-                                      bloodRequestProvider
-                                          .publishMsg1(
-                                              topic: bloodRequestProvider
-                                                  .mqttPublishTopic,
-                                              msg: bloodRequestProvider.pubMsg1)
-                                          .then((status) async {
-                                        if (status.isSuccess) {
-                                          showSuccesstoast(status.message);
-                                        } else {
-                                          showFailedtoast(status.message);
-                                        }
-                                      });
-                                    }
-                                  : null,
-                              child: Text('ON Button 1'),
-                            ),
-                          ),
-                          SizedBox(width: 2.0),
-                          Container(
-                            width: 100,
-                            height: 100,
-                            child: ElevatedButton(
-                              onPressed: bloodRequestProvider.mqttOnButton2
-                                  ? () {
-                                      bloodRequestProvider
-                                          .publishMsg2(
-                                              topic: bloodRequestProvider
-                                                  .mqttPublishTopic,
-                                              msg: bloodRequestProvider.pubMsg2)
-                                          .then((status) async {
-                                        if (status.isSuccess) {
-                                          showSuccesstoast(status.message);
-                                        } else {
-                                          showFailedtoast(status.message);
-                                        }
-                                      });
-                                    }
-                                  : null,
-                              child: Text('Off Button 2'),
-                            ),
-                          )
                         ],
                       ),
                     ),
-                  ),
-                  Center(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          width: 100,
-                          height: 100,
-                          child: ElevatedButton(
-                            onPressed: bloodRequestProvider.mqttOnButton3
-                                ? () {
-                                    bloodRequestProvider
-                                        .publishMsg3(
-                                            topic: bloodRequestProvider
-                                                .mqttPublishTopic,
-                                            msg: bloodRequestProvider.pubMsg3)
-                                        .then((status) async {
-                                      if (status.isSuccess) {
-                                        showSuccesstoast(status.message);
-                                      } else {
-                                        showFailedtoast(status.message);
-                                      }
-                                    });
-                                  }
-                                : null,
-                            child: Text('STATUS button 3'),
+                    Expanded(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 20.0),
+                        child: Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: Consumer<BloodRequestProvider>(
+                            builder: (context, bloodRequestProvider, _) {
+                              if (bloodRequestProvider.listOfPairRequests !=
+                                  null) {
+                                if (bloodRequestProvider
+                                        .listOfPairRequests.length >
+                                    0) {
+                                  return Table(
+                                    border: TableBorder.all(
+                                        width: 1.0, color: Colors.black),
+                                    children: List.generate(
+                                      bloodRequestProvider
+                                          .listOfPairRequests.length,
+                                      (index) {
+                                        final item = bloodRequestProvider
+                                            .listOfPairRequests[index];
+                                        return TableRow(
+                                          children: <Widget>[
+                                            TableCell(
+                                              child: Container(
+                                                padding: EdgeInsets.all(10.0),
+                                                child: Text(item[0]),
+                                              ),
+                                            ),
+                                            TableCell(
+                                              child: Container(
+                                                padding: EdgeInsets.all(10.0),
+                                                child: Text(item[1]),
+                                              ),
+                                            ),
+                                          ],
+                                        );
+                                      },
+                                    ),
+                                  );
+                                } else {
+                                  return Container(
+                                    margin: EdgeInsets.only(
+                                        top: 50.0), // set top margin
+                                    child: Text(
+                                      'No device data received.',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 20.0,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  );
+                                }
+                              } else {
+                                return Container(
+                                  margin: EdgeInsets.only(
+                                      top: 50.0), // set top margin
+                                  child: Text(
+                                    'No device data received.',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 20.0,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                );
+                              }
+                            },
                           ),
                         ),
-                        SizedBox(width: 2.0),
+                      ),
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
                         Container(
-                          width: 100,
-                          height: 100,
+                          margin: EdgeInsets.symmetric(vertical: 10),
                           child: ElevatedButton(
-                            onPressed: bloodRequestProvider.mqttOnButton4
+                            onPressed: bloodRequestProvider.mqttOnButton1
                                 ? () {
                                     bloodRequestProvider
-                                        .publishMsg4(
-                                            topic: bloodRequestProvider
-                                                .mqttPublishTopic,
-                                            msg: bloodRequestProvider.pubMsg4)
+                                        .publishMsg1(
+                                      topic:
+                                          bloodRequestProvider.mqttPublishTopic,
+                                      msg: bloodRequestProvider.pubMsg1,
+                                    )
                                         .then((status) async {
                                       if (status.isSuccess) {
                                         showSuccesstoast(status.message);
@@ -301,17 +355,134 @@ class MyHomePage extends StatelessWidget {
                                     });
                                   }
                                 : null,
-                            child: Text('Config button 4'),
+                            child: Text(bloodRequestProvider.topMsg1 ?? 'ON'),
+                            style: ElevatedButton.styleFrom(
+                              primary:
+                                  Colors.blue, // or any other color you prefer
+                              onPrimary: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              minimumSize: Size(120, 50), // adjust as needed
+                            ),
                           ),
-                        )
+                        ),
+                        ElevatedButton(
+                          onPressed: bloodRequestProvider.mqttOnButton2
+                              ? () {
+                                  bloodRequestProvider
+                                      .publishMsg2(
+                                    topic:
+                                        bloodRequestProvider.mqttPublishTopic,
+                                    msg: bloodRequestProvider.pubMsg2,
+                                  )
+                                      .then((status) async {
+                                    if (status.isSuccess) {
+                                      showSuccesstoast(status.message);
+                                    } else {
+                                      showFailedtoast(status.message);
+                                    }
+                                  });
+                                }
+                              : null,
+                          child: Text(bloodRequestProvider.topMsg2 ?? 'OFF'),
+                          style: ElevatedButton.styleFrom(
+                            primary:
+                                Colors.blue, // or any other color you prefer
+                            onPrimary: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            minimumSize: Size(120, 50), // adjust as needed
+                          ),
+                        ),
                       ],
                     ),
-                  )
-                ],
-              );
-            }),
-          ),
-        ));
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        ElevatedButton(
+                          onPressed: bloodRequestProvider.mqttOnButton3
+                              ? () {
+                                  bloodRequestProvider
+                                      .publishMsg3(
+                                    topic:
+                                        bloodRequestProvider.mqttPublishTopic,
+                                    msg: bloodRequestProvider.pubMsg3,
+                                  )
+                                      .then((status) async {
+                                    if (status.isSuccess) {
+                                      showSuccesstoast(status.message);
+                                    } else {
+                                      showFailedtoast(status.message);
+                                    }
+                                  });
+                                }
+                              : null,
+                          child: Text(bloodRequestProvider.topMsg3 ?? 'GET'),
+                          style: ElevatedButton.styleFrom(
+                            primary:
+                                Colors.blue, // or any other color you prefer
+                            onPrimary: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            minimumSize: Size(120, 50), // adjust as needed
+                          ),
+                        ),
+                        ElevatedButton(
+                          onPressed: bloodRequestProvider.mqttOnButton4
+                              ? () {
+                                  bloodRequestProvider
+                                      .publishMsg4(
+                                    topic:
+                                        bloodRequestProvider.mqttPublishTopic,
+                                    msg: bloodRequestProvider.pubMsg4,
+                                  )
+                                      .then((status) async {
+                                    if (status.isSuccess) {
+                                      showSuccesstoast(status.message);
+                                    } else {
+                                      showFailedtoast(status.message);
+                                    }
+                                  });
+                                }
+                              : null,
+                          child: Text(bloodRequestProvider.topMsg4 ?? 'GSC'),
+                          style: ElevatedButton.styleFrom(
+                            primary:
+                                Colors.blue, // or any other color you prefer
+                            onPrimary: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            minimumSize: Size(120, 50), // adjust as needed
+                          ),
+                        ),
+                      ],
+                    ),
+                  ]);
+            })));
+  }
+
+  void checkPassword(String password, BuildContext context) {
+// defaullt pass 8866188126
+    BloodRequestProvider bloodRequestProvider =
+        Provider.of<BloodRequestProvider>(context, listen: false);
+    final String defaultPass = bloodRequestProvider.activationCode;
+    if (password == "8866188126") {
+      Navigator.of(context).pop();
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => AllBloodRequestsPage(),
+        ),
+      );
+      showSuccesstoast("Password is correct");
+    } else {
+      Navigator.of(context).pop();
+      showFailedtoast("You entered wrong password");
+    }
   }
 
   void showSuccesstoast(String message) {

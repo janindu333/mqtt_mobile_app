@@ -10,7 +10,9 @@ import 'package:flutter_svg/svg.dart';
 import 'package:hive/hive.dart';
 import 'package:bloodDonate/ui/routes/RoutePage.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../blocks/blood_request_block_provider.dart';
 import '../../common/assets.dart';
 import '../../common/hive_boxes.dart';
 import '../../common/styles.dart';
@@ -46,13 +48,29 @@ class _SplashScreenState extends State<SplashScreen> {
     });
   }
 
-  void _route(value) {
+  void _route(value) async {
     final isFirstLaunch = Hive.box(ConfigBox.key)
         .get(ConfigBox.isFirstLaunch, defaultValue: true) as bool;
 
-    Navigator.of(context).pushNamedAndRemoveUntil(
-        RoutePage.main, (route) => false,
-        arguments: MainPage());
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    BloodRequestProvider bloodRequestProvider =
+        Provider.of<BloodRequestProvider>(context, listen: false);
+
+    bool isactivated = prefs.getBool('_isActivated') ?? false;
+
+    print(isactivated);
+
+    if (!isactivated) {
+      _destination = RoutePage.tutorial;
+      Navigator.of(context).pushNamedAndRemoveUntil(
+          RoutePage.tutorial, (route) => false,
+          arguments: TutorialScreen());
+    } else {
+      Navigator.of(context).pushNamedAndRemoveUntil(
+          RoutePage.main, (route) => false,
+          arguments: MainPage());
+    }
   }
 
   String _destination = '';
