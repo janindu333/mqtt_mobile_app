@@ -59,8 +59,6 @@ class _SplashScreenState extends State<SplashScreen> {
 
     bool isactivated = prefs.getBool('_isActivated') ?? false;
 
-    print(isactivated);
-
     if (!isactivated) {
       _destination = RoutePage.tutorial;
       Navigator.of(context).pushNamedAndRemoveUntil(

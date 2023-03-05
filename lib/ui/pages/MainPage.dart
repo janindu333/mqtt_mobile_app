@@ -193,26 +193,40 @@ class MyHomePage extends StatelessWidget {
                                 ),
                               )),
                           Visibility(
-                              visible: bloodRequestProvider
-                                  .mqttDisconnectivityBtnVisible,
-                              child: InkWell(
-                                onTap: () {
-                                  bloodRequestProvider
-                                      .disConnectFromBroker()
-                                      .then((status) async {
-                                    if (status.isSuccess) {
-                                      showSuccesstoast(status.message);
-                                    } else {
-                                      showFailedtoast(status.message);
-                                    }
-                                  });
-                                },
-                                child: Image.asset(
-                                  'assets/images/connected.png',
-                                  width: 150,
-                                  height: 50,
+                            visible: bloodRequestProvider
+                                .mqttDisconnectivityBtnVisible,
+                            child: InkWell(
+                              onTap: () {
+                                bloodRequestProvider
+                                    .disConnectFromBroker()
+                                    .then((status) async {
+                                  if (status.isSuccess) {
+                                    showSuccesstoast(status.message);
+                                  } else {
+                                    showFailedtoast(status.message);
+                                  }
+                                });
+                              },
+                              child: Container(
+                                width: 150,
+                                height: 50,
+                                decoration: BoxDecoration(
+                                  color: Color(0xFF44859F),
+                                  borderRadius: BorderRadius.circular(10),
                                 ),
-                              )),
+                                child: Center(
+                                  child: Text(
+                                    'Connected',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
                           InkWell(
                             onTap: () {
                               String password = '';
@@ -357,8 +371,8 @@ class MyHomePage extends StatelessWidget {
                                 : null,
                             child: Text(bloodRequestProvider.topMsg1 ?? 'ON'),
                             style: ElevatedButton.styleFrom(
-                              primary:
-                                  Colors.blue, // or any other color you prefer
+                              primary: Color(
+                                  0xFF44859F), // or any other color you prefer
                               onPrimary: Colors.white,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
@@ -387,8 +401,8 @@ class MyHomePage extends StatelessWidget {
                               : null,
                           child: Text(bloodRequestProvider.topMsg2 ?? 'OFF'),
                           style: ElevatedButton.styleFrom(
-                            primary:
-                                Colors.blue, // or any other color you prefer
+                            primary: Color(
+                                0xFF44859F), // or any other color you prefer
                             onPrimary: Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
@@ -421,8 +435,8 @@ class MyHomePage extends StatelessWidget {
                               : null,
                           child: Text(bloodRequestProvider.topMsg3 ?? 'GET'),
                           style: ElevatedButton.styleFrom(
-                            primary:
-                                Colors.blue, // or any other color you prefer
+                            primary: Color(
+                                0xFF44859F), // or any other color you prefer
                             onPrimary: Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
@@ -450,8 +464,8 @@ class MyHomePage extends StatelessWidget {
                               : null,
                           child: Text(bloodRequestProvider.topMsg4 ?? 'GSC'),
                           style: ElevatedButton.styleFrom(
-                            primary:
-                                Colors.blue, // or any other color you prefer
+                            primary: Color(
+                                0xFF44859F), // or any other color you prefer
                             onPrimary: Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
