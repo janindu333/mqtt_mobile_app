@@ -13,6 +13,7 @@ import 'package:bloodDonate/models/EventRequestResponseModel.dart';
 import 'package:flutter/foundation.dart';
 import 'package:mqtt_client/mqtt_client.dart';
 import 'package:mqtt_client/mqtt_server_client.dart';
+import 'package:uuid/uuid.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class BloodRequestProvider with ChangeNotifier {
@@ -131,6 +132,11 @@ class BloodRequestProvider with ChangeNotifier {
 
   SharedPreferences prefs;
 
+  String getUniqueDeviceId() {
+    var uuid = Uuid();
+    return uuid.v4();
+  }
+
   Future<ResponseModel> connectToBroker({String ip, String port}) async {
     ResponseModel responseModel;
 
@@ -151,6 +157,18 @@ class BloodRequestProvider with ChangeNotifier {
 
     client.onSubscribed = onSubscribed;
     client.onSubscribeFail = onSubscribeFail;
+    client.onDisconnected = onDisconnected;
+    client.logging(on: true);
+
+    final connMess = MqttConnectMessage()
+        .withClientIdentifier(getUniqueDeviceId())
+        .withWillTopic(
+            'willtopic') // If you set this you must set a will message
+        .withWillMessage('My Will message')
+        .startClean() // Non persistent session for testing
+        .withWillQos(MqttQos.atLeastOnce);
+    print('EXAMPLE::Mosquitto client connecting....');
+    client.connectionMessage = connMess;
 
     try {
       await client.connect();
@@ -223,7 +241,7 @@ class BloodRequestProvider with ChangeNotifier {
 
   Future<ResponseModel> subscribeToTopic({String topic}) async {
     ResponseModel responseModel;
-    client.subscribe(topic, MqttQos.exactlyOnce);
+    client.subscribe(topic, MqttQos.atMostOnce);
     client.updates.listen(handleMessage);
     _mqttSUbscribeTopic = topic;
     print("BBBBBBBBBBBBB , $topic");
@@ -269,6 +287,12 @@ class BloodRequestProvider with ChangeNotifier {
     _mqttPort = port;
     _mqttSUbscribeTopic = subTop;
 
+    if (_isMqttConnected) {
+      disConnectFromBroker();
+    }
+
+    _isMqttConnected = false;
+
     // Store a value
     prefs = await SharedPreferences.getInstance();
     prefs.setString('_mqttPublishTopic', _mqttPublishTopic);
@@ -284,14 +308,16 @@ class BloodRequestProvider with ChangeNotifier {
 
     prefs.setString('_mqttHost', _mqttHost);
     prefs.setString('_mqttPort', _mqttPort);
+    prefs.setBool('_isMqttConnected', _isMqttConnected);
     prefs.setString('_mqttSUbscribeTopic', _mqttSUbscribeTopic);
 
     print("_mqttHost -> $_mqttHost , _mqttPort -> $_mqttPort");
 
     responseModel = ResponseModel('Succesfully Store Published Data ', true);
-    _isMqttConnected = true;
+
     prefs.setBool('_isMqttConnected', _isMqttConnected);
     notifyListeners();
+
     return responseModel;
   }
 
@@ -299,7 +325,7 @@ class BloodRequestProvider with ChangeNotifier {
     ResponseModel responseModel;
     final builder = MqttClientPayloadBuilder();
     builder.addString(msg);
-    client.publishMessage(topic, MqttQos.exactlyOnce, builder.payload);
+    client.publishMessage(topic, MqttQos.atMostOnce, builder.payload);
 
     responseModel =
         ResponseModel('Published Message ' + msg + " to " + topic, true);
@@ -334,7 +360,7 @@ class BloodRequestProvider with ChangeNotifier {
     ResponseModel responseModel;
     final builder = MqttClientPayloadBuilder();
     builder.addString(msg);
-    client.publishMessage(topic, MqttQos.exactlyOnce, builder.payload);
+    client.publishMessage(topic, MqttQos.atMostOnce, builder.payload);
 
     responseModel =
         ResponseModel('Published Message ' + msg + " to " + topic, true);
@@ -368,7 +394,7 @@ class BloodRequestProvider with ChangeNotifier {
     ResponseModel responseModel;
     final builder = MqttClientPayloadBuilder();
     builder.addString(msg);
-    client.publishMessage(topic, MqttQos.exactlyOnce, builder.payload);
+    client.publishMessage(topic, MqttQos.atMostOnce, builder.payload);
 
     responseModel =
         ResponseModel('Published Message ' + msg + " to " + topic, true);
@@ -402,7 +428,7 @@ class BloodRequestProvider with ChangeNotifier {
     ResponseModel responseModel;
     final builder = MqttClientPayloadBuilder();
     builder.addString(msg);
-    client.publishMessage(topic, MqttQos.exactlyOnce, builder.payload);
+    client.publishMessage(topic, MqttQos.atMostOnce, builder.payload);
 
     responseModel =
         ResponseModel('Published Message ' + msg + " to " + topic, true);
@@ -510,6 +536,10 @@ class BloodRequestProvider with ChangeNotifier {
     print('Failed to subscribe to $topic');
   }
 
+  void onDisconnected() {
+    print('Disconnected from the broker.');
+  }
+
   Future<BloodRequestProvider> getData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
@@ -525,17 +555,17 @@ class BloodRequestProvider with ChangeNotifier {
         prefs.getString('_mqttSUbscribeTopic') ?? "8866188126P";
     _mqttPublishTopic = prefs.getString('_mqttPublishTopic') ?? "8866188126S";
 
-    _pubMsg1 = prefs.getString('_pubMsg1') ?? "";
-    _pubMsg2 = prefs.getString('_pubMsg2') ?? "";
-    _pubMsg3 = prefs.getString('_pubMsg3') ?? "";
-    _pubMsg4 = prefs.getString('_pubMsg4') ?? "";
+    _pubMsg1 = prefs.getString('_pubMsg1') ?? "*ON1#";
+    _pubMsg2 = prefs.getString('_pubMsg2') ?? "*OFF1#";
+    _pubMsg3 = prefs.getString('_pubMsg3') ?? "*GET1#";
+    _pubMsg4 = prefs.getString('_pubMsg4') ?? "*GSC1#";
 
     _topMsg1 = prefs.getString('_topMsg1') ?? "ON";
     _topMsg2 = prefs.getString('_topMsg2') ?? "OFF";
     _topMsg3 = prefs.getString('_topMsg3') ?? "GET";
     _topMsg4 = prefs.getString('_topMsg4') ?? "GSC";
 
-    _delayTime = prefs.getString('_delayTime') ?? "2";
+    _delayTime = prefs.getString('_delayTime') ?? "15";
 
     _activationCode = prefs.getString('_activationCode') ?? "8866188126";
 

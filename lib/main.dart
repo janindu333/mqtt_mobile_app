@@ -24,9 +24,11 @@ import 'ui/pages/LoginPage.dart';
 import 'firebase_options.dart';
 import 'ui/pages/splash_screen.dart';
 import 'di_container.dart' as di;
+import 'package:flutter/services.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );

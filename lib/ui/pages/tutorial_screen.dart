@@ -115,7 +115,7 @@ class _TutorialScreenState extends State<TutorialScreen>
                             // _resetFields();
                             showSuccesstoast(status.message);
 
-                            Navigator.push(
+                            Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => MainPage(),

@@ -66,7 +66,7 @@ class _MainPageState extends State<MainPage> {
               .then((status) async {
             if (status.isSuccess) {
               // _resetFields();
-              showSuccesstoast(status.message);
+              //   showSuccesstoast(status.message);
             } else {
               showFailedtoast(status.message);
             }
@@ -128,7 +128,7 @@ class MyHomePage extends StatelessWidget {
     return Scaffold(
         appBar: AppBar(
           flexibleSpace: Container(
-            margin: EdgeInsets.only(top: 25), // Add a top margin of 100 pixels
+            margin: EdgeInsets.only(top: 30), // Add a top margin of 100 pixels
             decoration: BoxDecoration(
               image: DecorationImage(
                 image: AssetImage('assets/images/cover.png'),
@@ -152,46 +152,57 @@ class MyHomePage extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           Visibility(
-                              visible: bloodRequestProvider
-                                  .mqttConnectivityBtnVisible,
-                              child: InkWell(
-                                onTap: () {
-                                  bloodRequestProvider
-                                      .connectToBroker(
-                                          ip: bloodRequestProvider.mqttHost
-                                              .trim(),
-                                          port: bloodRequestProvider.mqttPort
-                                              .trim())
-                                      .then((status) async {
-                                    if (status.isSuccess) {
-                                      // _resetFields();
-                                      showSuccesstoast(status.message);
+                            visible:
+                                bloodRequestProvider.mqttConnectivityBtnVisible,
+                            child: InkWell(
+                              onTap: () {
+                                bloodRequestProvider
+                                    .connectToBroker(
+                                  ip: bloodRequestProvider.mqttHost.trim(),
+                                  port: bloodRequestProvider.mqttPort.trim(),
+                                )
+                                    .then((status) async {
+                                  if (status.isSuccess) {
+                                    showSuccesstoast(status.message);
 
-                                      bloodRequestProvider
-                                          .subscribeToTopic(
-                                        topic: bloodRequestProvider
-                                            .mqttSUbscribeTopic
-                                            .trim(),
-                                      )
-                                          .then((status) async {
-                                        if (status.isSuccess) {
-                                          // _resetFields();
-                                          showSuccesstoast(status.message);
-                                        } else {
-                                          showFailedtoast(status.message);
-                                        }
-                                      });
-                                    } else {
-                                      showFailedtoast(status.message);
-                                    }
-                                  });
-                                },
-                                child: Image.asset(
-                                  'assets/images/connect.png',
-                                  width: 150,
-                                  height: 50,
+                                    bloodRequestProvider
+                                        .subscribeToTopic(
+                                      topic: bloodRequestProvider
+                                          .mqttSUbscribeTopic
+                                          .trim(),
+                                    )
+                                        .then((status) async {
+                                      if (status.isSuccess) {
+                                        //   showSuccesstoast(status.message);
+                                      } else {
+                                        showFailedtoast(status.message);
+                                      }
+                                    });
+                                  } else {
+                                    showFailedtoast(status.message);
+                                  }
+                                });
+                              },
+                              child: Container(
+                                width: 150,
+                                height: 50,
+                                decoration: BoxDecoration(
+                                  color: Color(0xFF44859F),
+                                  borderRadius: BorderRadius.circular(30),
                                 ),
-                              )),
+                                child: Center(
+                                  child: Text(
+                                    "Connect",
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
                           Visibility(
                             visible: bloodRequestProvider
                                 .mqttDisconnectivityBtnVisible,
@@ -212,7 +223,7 @@ class MyHomePage extends StatelessWidget {
                                 height: 50,
                                 decoration: BoxDecoration(
                                   color: Color(0xFF44859F),
-                                  borderRadius: BorderRadius.circular(10),
+                                  borderRadius: BorderRadius.circular(30),
                                 ),
                                 child: Center(
                                   child: Text(
@@ -362,9 +373,9 @@ class MyHomePage extends StatelessWidget {
                                     )
                                         .then((status) async {
                                       if (status.isSuccess) {
-                                        showSuccesstoast(status.message);
+                                        //  showSuccesstoast(status.message);
                                       } else {
-                                        showFailedtoast(status.message);
+                                        // showFailedtoast(status.message);
                                       }
                                     });
                                   }
@@ -375,7 +386,7 @@ class MyHomePage extends StatelessWidget {
                                   0xFF44859F), // or any other color you prefer
                               onPrimary: Colors.white,
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
+                                borderRadius: BorderRadius.circular(30),
                               ),
                               minimumSize: Size(120, 50), // adjust as needed
                             ),
@@ -392,9 +403,9 @@ class MyHomePage extends StatelessWidget {
                                   )
                                       .then((status) async {
                                     if (status.isSuccess) {
-                                      showSuccesstoast(status.message);
+                                      // showSuccesstoast(status.message);
                                     } else {
-                                      showFailedtoast(status.message);
+                                      // showFailedtoast(status.message);
                                     }
                                   });
                                 }
@@ -405,75 +416,82 @@ class MyHomePage extends StatelessWidget {
                                 0xFF44859F), // or any other color you prefer
                             onPrimary: Colors.white,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(30),
                             ),
                             minimumSize: Size(120, 50), // adjust as needed
                           ),
                         ),
                       ],
                     ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        ElevatedButton(
-                          onPressed: bloodRequestProvider.mqttOnButton3
-                              ? () {
-                                  bloodRequestProvider
-                                      .publishMsg3(
-                                    topic:
-                                        bloodRequestProvider.mqttPublishTopic,
-                                    msg: bloodRequestProvider.pubMsg3,
-                                  )
-                                      .then((status) async {
-                                    if (status.isSuccess) {
-                                      showSuccesstoast(status.message);
-                                    } else {
-                                      showFailedtoast(status.message);
-                                    }
-                                  });
-                                }
-                              : null,
-                          child: Text(bloodRequestProvider.topMsg3 ?? 'GET'),
-                          style: ElevatedButton.styleFrom(
-                            primary: Color(
-                                0xFF44859F), // or any other color you prefer
-                            onPrimary: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
+                    Container(
+                      margin: EdgeInsets.only(bottom: 45),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          ElevatedButton(
+                            onPressed: bloodRequestProvider.mqttOnButton3
+                                ? () {
+                                    bloodRequestProvider
+                                        .publishMsg3(
+                                      topic:
+                                          bloodRequestProvider.mqttPublishTopic,
+                                      msg: bloodRequestProvider.pubMsg3,
+                                    )
+                                        .then((status) async {
+                                      if (status.isSuccess) {
+                                        //showSuccesstoast(status.message);
+                                      } else {
+                                        //  showFailedtoast(status.message);
+                                      }
+                                    });
+                                  }
+                                : null,
+                            child: Text(bloodRequestProvider.topMsg3 ?? 'GET'),
+                            style: ElevatedButton.styleFrom(
+                              primary: Color(
+                                  0xFF44859F), // or any other color you prefer
+                              onPrimary: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                              minimumSize: Size(120, 50), // adjust as needed
                             ),
-                            minimumSize: Size(120, 50), // adjust as needed
                           ),
-                        ),
-                        ElevatedButton(
-                          onPressed: bloodRequestProvider.mqttOnButton4
-                              ? () {
-                                  bloodRequestProvider
-                                      .publishMsg4(
-                                    topic:
-                                        bloodRequestProvider.mqttPublishTopic,
-                                    msg: bloodRequestProvider.pubMsg4,
-                                  )
-                                      .then((status) async {
-                                    if (status.isSuccess) {
-                                      showSuccesstoast(status.message);
-                                    } else {
-                                      showFailedtoast(status.message);
-                                    }
-                                  });
-                                }
-                              : null,
-                          child: Text(bloodRequestProvider.topMsg4 ?? 'GSC'),
-                          style: ElevatedButton.styleFrom(
-                            primary: Color(
-                                0xFF44859F), // or any other color you prefer
-                            onPrimary: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
+                          ElevatedButton(
+                            onPressed: bloodRequestProvider.mqttOnButton4
+                                ? () {
+                                    bloodRequestProvider
+                                        .publishMsg4(
+                                      topic:
+                                          bloodRequestProvider.mqttPublishTopic,
+                                      msg: bloodRequestProvider.pubMsg4,
+                                    )
+                                        .then((status) async {
+                                      if (status.isSuccess) {
+                                        // showSuccesstoast(status.message);
+                                      } else {
+                                        // showFailedtoast(status.message);
+                                      }
+                                    });
+                                  }
+                                : null,
+                            child: Text(
+                              bloodRequestProvider.topMsg4 ?? 'GSC',
+                              style: TextStyle(
+                                fontFamily: 'ITCAvantGardeStd-BoldObl',
+                              ),
                             ),
-                            minimumSize: Size(120, 50), // adjust as needed
+                            style: ElevatedButton.styleFrom(
+                              primary: Color(0xFF44859F),
+                              onPrimary: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                              minimumSize: Size(120, 50),
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ]);
             })));
